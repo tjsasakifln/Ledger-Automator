@@ -53,3 +53,4 @@ logs/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+.claude/
