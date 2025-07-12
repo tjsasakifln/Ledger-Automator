@@ -5,7 +5,7 @@
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
 [![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-red.svg)](https://streamlit.io)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-ML-orange.svg)](https://scikit-learn.org)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/tjsasakifln/Ledger-Automator/blob/master/LICENSE)
 [![Status](https://img.shields.io/badge/Status-Proof%20of%20Concept-yellow.svg)](README.md)
 
 ## ⚠️ **IMPORTANT DISCLAIMER**
@@ -57,7 +57,7 @@ ledger-automator/
 
 ```bash
 # Clone the repository
-git clone https://github.com/tjsasakifln/ledger-automator.git
+git clone https://github.com/tjsasakifln/Ledger-Automator.git
 cd ledger-automator
 
 # Install dependencies
@@ -313,7 +313,7 @@ streamlit run scripts/app.py
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](https://github.com/tjsasakifln/Ledger-Automator/blob/master/LICENSE) file for details.
 
 ## 🌟 Contact & Business Development
 
@@ -327,8 +327,8 @@ This proof of concept demonstrates the foundational technology for enterprise-gr
 - 🚀 **Partnership**: Open to collaborative development opportunities
 
 ### 🛠️ **Technical Support**
-- 🐛 **Issues**: [GitHub Issues](https://github.com/tjsasakifln/ledger-automator/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/tjsasakifln/ledger-automator/discussions)
+- 🐛 **Issues**: [GitHub Issues](https://github.com/tjsasakifln/Ledger-Automator/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/tjsasakifln/Ledger-Automator/discussions)
 
 ## 🙏 Acknowledgments
 
