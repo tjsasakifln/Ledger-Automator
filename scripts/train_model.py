@@ -12,19 +12,20 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, accuracy_score
 import sys
 
-# Adicionar o diretório scripts ao path para importar módulos locais
+# Add scripts directory to path for importing local modules
 sys.path.append(os.path.dirname(__file__))
 from preprocess import prepare_training_data
+from data_augmentation import FinancialDataAugmenter
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def load_training_data():
     """
-    Load training data from CSV file.
+    Load training data from CSV file and generate additional synthetic data.
     
     Returns:
-        pd.DataFrame: DataFrame with training data
+        pd.DataFrame: DataFrame with training data (original + synthetic)
     """
     try:
         data_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'training_data.csv')
@@ -33,11 +34,28 @@ def load_training_data():
         if not os.path.exists(data_path):
             raise FileNotFoundError(f"File not found: {data_path}")
         
-        df = pd.read_csv(data_path)
-        logger.info(f"Dataset loaded with {len(df)} samples")
-        logger.info(f"Unique categories: {df['Category'].unique()}")
+        # Load original data
+        df_original = pd.read_csv(data_path)
+        logger.info(f"Original dataset loaded with {len(df_original)} samples")
         
-        return df
+        # Generate synthetic data for training enhancement
+        logger.info("Generating synthetic training data...")
+        augmenter = FinancialDataAugmenter()
+        df_synthetic = augmenter.generate_training_data()
+        logger.info(f"Generated {len(df_synthetic)} synthetic samples")
+        
+        # Combine original and synthetic data
+        df_combined = pd.concat([df_original, df_synthetic], ignore_index=True)
+        logger.info(f"Combined dataset: {len(df_combined)} total samples")
+        logger.info(f"Unique categories: {df_combined['Category'].unique()}")
+        
+        # Show distribution by category
+        category_counts = df_combined['Category'].value_counts()
+        logger.info("Category distribution:")
+        for category, count in category_counts.items():
+            logger.info(f"  {category}: {count} samples")
+        
+        return df_combined
         
     except Exception as e:
         logger.error(f"Error loading data: {str(e)}")
@@ -45,10 +63,10 @@ def load_training_data():
 
 def create_classifier():
     """
-    Cria um classificador LogisticRegression.
+    Creates a LogisticRegression classifier.
     
     Returns:
-        LogisticRegression: Modelo configurado
+        LogisticRegression: Configured model
     """
     classifier = LogisticRegression(
         random_state=42,
@@ -62,12 +80,12 @@ def create_classifier():
 
 def evaluate_model(classifier, X_test, y_test):
     """
-    Avalia o desempenho do modelo treinado.
+    Evaluates the performance of the trained model.
     
     Args:
-        classifier: Modelo treinado
-        X_test: Dados de test (features)
-        y_test: Labels de test
+        classifier: Trained model
+        X_test: Test data (features)
+        y_test: Test labels
     """
     try:
         logger.info("Evaluating model...")
@@ -88,12 +106,12 @@ def evaluate_model(classifier, X_test, y_test):
 
 def save_model_and_vectorizer(classifier, vectorizer, model_dir="outputs"):
     """
-    Salva o modelo treinado e o vetorizador em disco.
+    Saves the trained model and vectorizer to disk.
     
     Args:
-        classifier: Modelo treinado
-        vectorizer: Vetorizador TF-IDF treinado
-        model_dir (str): Diretório para salvar os arquivos
+        classifier: Trained model
+        vectorizer: Trained TF-IDF vectorizer
+        model_dir (str): Directory to save files
     """
     try:
         # Create directory if it does not exist
@@ -120,7 +138,7 @@ def save_model_and_vectorizer(classifier, vectorizer, model_dir="outputs"):
 
 def train_model():
     """
-    Função principal para treinar o modelo de classificação.
+    Main function for training the classification model.
     """
     try:
         logger.info("🚀 Starting model training...")

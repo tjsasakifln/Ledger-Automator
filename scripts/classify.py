@@ -1,6 +1,6 @@
 """
-Script para classificação de transações financeiras usando modelo treinado.
-Carrega mock_transactions.csv, aplica o modelo e salva resultado em outputs/.
+Script for financial transaction classification using trained model.
+Loads mock_transactions.csv, applies model and saves results to outputs/.
 """
 
 import pandas as pd
@@ -20,20 +20,20 @@ logger = logging.getLogger(__name__)
 
 def load_model_and_vectorizer(model_dir="outputs"):
     """
-    Carrega o modelo treinado e o vetorizador do disco.
+    Loads the trained model and vectorizer from disk.
     
     Args:
-        model_dir (str): Diretório onde estão salvos os arquivos
+        model_dir (str): Directory where files are saved
         
     Returns:
-        tuple: (modelo, vetorizador)
+        tuple: (model, vectorizer)
     """
     try:
         # Caminhos dos arquivos
         model_path = os.path.join(os.path.dirname(__file__), '..', model_dir, 'model.pkl')
         vectorizer_path = os.path.join(os.path.dirname(__file__), '..', model_dir, 'vectorizer.pkl')
         
-        # Verificar se arquivos existem
+        # Check if files exist
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Modelo não encontrado em: {model_path}")
         if not os.path.exists(vectorizer_path):
@@ -47,31 +47,31 @@ def load_model_and_vectorizer(model_dir="outputs"):
         logger.info(f"Loading vectorizer from: {vectorizer_path}")
         vectorizer = joblib.load(vectorizer_path)
         
-        logger.info("✅ Modelo e vetorizador carregados com sucesso!")
+        logger.info("✅ Model and vectorizer loaded successfully!")
         return model, vectorizer
         
     except Exception as e:
-        logger.error(f"Erro ao carregar modelo: {str(e)}")
+        logger.error(f"Error loading model: {str(e)}")
         raise
 
 def load_transactions_data():
     """
-    Carrega dados de transações do arquivo mock_transactions.csv.
+    Loads transaction data from mock_transactions.csv file.
     
     Returns:
-        pd.DataFrame: DataFrame com transações
+        pd.DataFrame: DataFrame with transactions
     """
     try:
         data_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'mock_transactions.csv')
         logger.info(f"Carregando transações de: {data_path}")
         
         if not os.path.exists(data_path):
-            raise FileNotFoundError(f"Arquivo não encontrado: {data_path}")
+            raise FileNotFoundError(f"File not found: {data_path}")
         
         df = pd.read_csv(data_path)
         logger.info(f"Dataset carregado com {len(df)} transações")
         
-        # Verificar colunas obrigatórias
+        # Check required columns
         required_columns = ['Date', 'Description', 'Amount']
         missing_columns = [col for col in required_columns if col not in df.columns]
         if missing_columns:
@@ -80,20 +80,20 @@ def load_transactions_data():
         return df
         
     except Exception as e:
-        logger.error(f"Erro ao carregar transações: {str(e)}")
+        logger.error(f"Error loading transactions: {str(e)}")
         raise
 
 def classify_transactions(df, model, vectorizer):
     """
-    Classifica transações usando o modelo treinado.
+    Classifies transactions using the trained model.
     
     Args:
-        df (pd.DataFrame): DataFrame com transações
-        model: Modelo treinado
-        vectorizer: Vetorizador TF-IDF treinado
+        df (pd.DataFrame): DataFrame with transactions
+        model: Trained model
+        vectorizer: Trained TF-IDF vectorizer
         
     Returns:
-        pd.DataFrame: DataFrame com categorias adicionadas
+        pd.DataFrame: DataFrame with added categories
     """
     try:
         logger.info("Iniciando classificação das transações...")
@@ -129,120 +129,120 @@ def classify_transactions(df, model, vectorizer):
 
 def generate_classification_summary(df_classified):
     """
-    Gera um resumo da classificação realizada.
+    Generates a summary of the classification performed.
     
     Args:
-        df_classified (pd.DataFrame): DataFrame com transações classificadas
+        df_classified (pd.DataFrame): DataFrame with classified transactions
     """
     try:
-        print("\n📊 RESUMO DA CLASSIFICAÇÃO:")
+        print("\n📊 CLASSIFICATION SUMMARY:")
         print("=" * 40)
         
-        # Contagem por categoria
+        # Count by category
         category_counts = df_classified['Category'].value_counts()
-        print("\n🏷️  TRANSAÇÕES POR CATEGORIA:")
+        print("\n🏷️  TRANSACTIONS BY CATEGORY:")
         for category, count in category_counts.items():
             percentage = (count / len(df_classified)) * 100
             print(f"   {category}: {count} ({percentage:.1f}%)")
         
-        # Estatísticas de confiança
+        # Confidence statistics
         avg_confidence = df_classified['Confidence'].mean()
         min_confidence = df_classified['Confidence'].min()
-        print(f"\n🎯 CONFIANÇA MÉDIA: {avg_confidence:.3f}")
-        print(f"🎯 CONFIANÇA MÍNIMA: {min_confidence:.3f}")
+        print(f"\n🎯 AVERAGE CONFIDENCE: {avg_confidence:.3f}")
+        print(f"🎯 MINIMUM CONFIDENCE: {min_confidence:.3f}")
         
-        # Transações com baixa confiança
+        # Low confidence transactions
         low_confidence = df_classified[df_classified['Confidence'] < 0.5]
         if len(low_confidence) > 0:
-            print(f"\n⚠️  TRANSAÇÕES COM BAIXA CONFIANÇA ({len(low_confidence)}):")
+            print(f"\n⚠️  LOW CONFIDENCE TRANSACTIONS ({len(low_confidence)}):")
             for _, row in low_confidence.iterrows():
                 print(f"   {row['Description']} -> {row['Category']} ({row['Confidence']:.3f})")
         
     except Exception as e:
-        logger.error(f"Erro ao gerar resumo: {str(e)}")
+        logger.error(f"Error generating summary: {str(e)}")
 
 def save_results(df_classified, output_dir="outputs"):
     """
-    Salva os resultados da classificação em arquivo CSV.
+    Saves classification results to CSV file.
     
     Args:
-        df_classified (pd.DataFrame): DataFrame com transações classificadas
-        output_dir (str): Diretório de saída
+        df_classified (pd.DataFrame): DataFrame with classified transactions
+        output_dir (str): Output directory
     """
     try:
-        # Criar diretório se não existir
+        # Create directory if it does not exist
         full_output_dir = os.path.join(os.path.dirname(__file__), '..', output_dir)
         os.makedirs(full_output_dir, exist_ok=True)
         
-        # Nome do arquivo com timestamp
+        # Filename with timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"classified_transactions_{timestamp}.csv"
         output_path = os.path.join(full_output_dir, filename)
         
-        # Salvar arquivo principal
+        # Save main file
         df_classified.to_csv(output_path, index=False)
-        logger.info(f"Resultados salvos em: {output_path}")
+        logger.info(f"Results saved to: {output_path}")
         
-        # Salvar também com nome padrão (para facilitar uso)
+        # Also save with standard name (for easier use)
         standard_path = os.path.join(full_output_dir, "classified_transactions.csv")
         df_classified.to_csv(standard_path, index=False)
-        logger.info(f"Arquivo padrão salvo em: {standard_path}")
+        logger.info(f"Standard file saved to: {standard_path}")
         
-        print(f"\n💾 ARQUIVOS SALVOS:")
-        print(f"   📄 Com timestamp: {output_path}")
-        print(f"   📄 Padrão: {standard_path}")
+        print(f"\n💾 FILES SAVED:")
+        print(f"   📄 With timestamp: {output_path}")
+        print(f"   📄 Standard: {standard_path}")
         
         return output_path, standard_path
         
     except Exception as e:
-        logger.error(f"Erro ao salvar resultados: {str(e)}")
+        logger.error(f"Error saving results: {str(e)}")
         raise
 
 def main():
     """
-    Função principal para classificação de transações.
+    Main function for transaction classification.
     """
     try:
-        logger.info("🔍 Iniciando classificação de transações...")
+        logger.info("🔍 Starting transaction classification...")
         
-        # 1. Carregar modelo e vetorizador
+        # 1. Load model and vectorizer
         model, vectorizer = load_model_and_vectorizer()
         
-        # 2. Carregar dados de transações
+        # 2. Load transaction data
         df_transactions = load_transactions_data()
         
-        # 3. Classificar transações
+        # 3. Classify transactions
         df_classified = classify_transactions(df_transactions, model, vectorizer)
         
-        # 4. Gerar resumo
+        # 4. Generate summary
         generate_classification_summary(df_classified)
         
-        # 5. Salvar resultados
+        # 5. Save results
         output_path, standard_path = save_results(df_classified)
         
-        logger.info("✅ Classificação concluída com sucesso!")
+        logger.info("✅ Classification completed successfully!")
         return df_classified
         
     except Exception as e:
-        logger.error(f"❌ Erro na classificação: {str(e)}")
+        logger.error(f"❌ Error in classification: {str(e)}")
         raise
 
 if __name__ == "__main__":
     try:
-        print("🔍 LEDGER AUTOMATOR - CLASSIFICAÇÃO DE TRANSAÇÕES")
+        print("🔍 LEDGER AUTOMATOR - TRANSACTION CLASSIFICATION")
         print("=" * 55)
         
         df_result = main()
         
         print("\n" + "=" * 55)
-        print("✅ CLASSIFICAÇÃO CONCLUÍDA!")
-        print(f"📈 {len(df_result)} transações classificadas")
-        print("\n📋 PRÓXIMOS PASSOS:")
-        print("   1. Verifique: outputs/classified_transactions.csv")
-        print("   2. Execute: streamlit run scripts/app.py (para visualizar)")
+        print("✅ CLASSIFICATION COMPLETED!")
+        print(f"📈 {len(df_result)} transactions classified")
+        print("\n📋 NEXT STEPS:")
+        print("   1. Check: outputs/classified_transactions.csv")
+        print("   2. Run: streamlit run scripts/app.py (to visualize)")
         
     except Exception as e:
-        print(f"\n❌ ERRO: {str(e)}")
-        print("\n💡 DICA: Certifique-se de que o modelo foi treinado primeiro:")
+        print(f"\n❌ ERROR: {str(e)}")
+        print("\n💡 TIP: Make sure the model was trained first:")
         print("   python scripts/train_model.py")
         exit(1)

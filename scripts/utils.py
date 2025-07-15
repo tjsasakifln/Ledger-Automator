@@ -20,57 +20,57 @@ logger = logging.getLogger(__name__)
 
 def load_data(file_path: str, required_columns: list = None) -> pd.DataFrame:
     """
-    Carrega dados de um arquivo CSV com validação de colunas.
+    Load data from CSV file with column validation.
     
     Args:
-        file_path (str): Caminho para o arquivo CSV
-        required_columns (list, optional): Lista de colunas obrigatórias
+        file_path (str): Path to CSV file
+        required_columns (list, optional): List of required columns
         
     Returns:
-        pd.DataFrame: DataFrame carregado e validado
+        pd.DataFrame: Loaded and validated DataFrame
     """
     try:
-        logger.info(f"Carregando dados de: {file_path}")
+        logger.info(f"Loading data from: {file_path}")
         
         if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Arquivo não encontrado: {file_path}")
+            raise FileNotFoundError(f"File not found: {file_path}")
         
         df = pd.read_csv(file_path)
-        logger.info(f"Arquivo carregado com {len(df)} linhas e {len(df.columns)} colunas")
+        logger.info(f"File loaded with {len(df)} rows and {len(df.columns)} columns")
         
-        # Validar colunas obrigatórias
+        # Validate required columns
         if required_columns:
             missing_columns = [col for col in required_columns if col not in df.columns]
             if missing_columns:
-                raise ValueError(f"Colunas obrigatórias ausentes: {missing_columns}")
-            logger.info("✅ Todas as colunas obrigatórias estão presentes")
+                raise ValueError(f"Required columns missing: {missing_columns}")
+            logger.info("✅ All required columns are present")
         
         return df
         
     except Exception as e:
-        logger.error(f"Erro ao carregar dados: {str(e)}")
+        logger.error(f"Error loading data: {str(e)}")
         raise
 
 def validate_transaction_data(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Valida e limpa dados de transações financeiras.
+    Validate and clean financial transaction data.
     
     Args:
-        df (pd.DataFrame): DataFrame com dados de transações
+        df (pd.DataFrame): DataFrame with transaction data
         
     Returns:
-        pd.DataFrame: DataFrame validado e limpo
+        pd.DataFrame: Validated and cleaned DataFrame
     """
     try:
-        logger.info("Validando dados de transações...")
+        logger.info("Validating transaction data...")
         
         df_clean = df.copy()
         
-        # Converter coluna Date
+        # Convert column Date
         if 'Date' in df_clean.columns:
             df_clean['Date'] = pd.to_datetime(df_clean['Date'], errors='coerce')
             
-        # Converter coluna Amount
+        # Convert column Amount
         if 'Amount' in df_clean.columns:
             df_clean['Amount'] = pd.to_numeric(df_clean['Amount'], errors='coerce')
         
@@ -78,38 +78,38 @@ def validate_transaction_data(df: pd.DataFrame) -> pd.DataFrame:
         if 'Description' in df_clean.columns:
             df_clean['Description'] = df_clean['Description'].fillna('').astype(str)
         
-        # Remover linhas com dados críticos faltando
+        # Remove rows with missing critical data
         initial_rows = len(df_clean)
         df_clean = df_clean.dropna(subset=['Date', 'Amount'])
         final_rows = len(df_clean)
         
         if initial_rows != final_rows:
-            logger.warning(f"Removidas {initial_rows - final_rows} linhas com dados faltando")
+            logger.warning(f"Removed .* rows with missing data")
         
-        logger.info(f"✅ Dados validados: {len(df_clean)} transações válidas")
+        logger.info(f"✅ Data validated: {len(df_clean)} valid transactions")
         return df_clean
         
     except Exception as e:
-        logger.error(f"Erro na validação dos dados: {str(e)}")
+        logger.error(f"Error in data validation: {str(e)}")
         raise
 
 def save_classified_data(df: pd.DataFrame, output_path: str, include_timestamp: bool = True) -> str:
     """
-    Salva dados classificados em arquivo CSV.
+    Save classified data to CSV file.
     
     Args:
-        df (pd.DataFrame): DataFrame com dados classificados
-        output_path (str): Caminho de saída
-        include_timestamp (bool): Se deve incluir timestamp no nome do arquivo
+        df (pd.DataFrame): DataFrame with classified data
+        output_path (str): Output path
+        include_timestamp (bool): Whether to include timestamp in filename
         
     Returns:
-        str: Caminho do arquivo salvo
+        str: Path of saved file
     """
     try:
-        # Criar diretório se não existir
+        # Create directory if it does not exist
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
         
-        # Adicionar timestamp se solicitado
+        # Add timestamp if requested
         if include_timestamp:
             base_path, ext = os.path.splitext(output_path)
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -117,14 +117,14 @@ def save_classified_data(df: pd.DataFrame, output_path: str, include_timestamp: 
         else:
             final_path = output_path
         
-        # Salvar arquivo
+        # Save file
         df.to_csv(final_path, index=False)
-        logger.info(f"Dados salvos em: {final_path}")
+        logger.info(f"Data saved to: {final_path}")
         
         return final_path
         
     except Exception as e:
-        logger.error(f"Erro ao salvar dados: {str(e)}")
+        logger.error(f"Error saving data: {str(e)}")
         raise
 
 def create_summary_stats(df: pd.DataFrame) -> dict:
