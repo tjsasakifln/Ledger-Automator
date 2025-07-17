@@ -346,14 +346,7 @@ The prototype recognizes 8 basic transaction categories:
 
 **ML Engineer & Full-Stack Developer** with demonstrated expertise in enterprise fintech development.
 
-**Seeking international opportunities in:**
-- **United States** - ML engineering and fintech development
-- **Canada** - Financial technology and AI engineering
-- **United Kingdom** - Senior engineering positions in fintech
-- **Australia** - Enterprise software development
-- **Germany** - FinTech innovation and engineering
-- **Singapore** - Financial technology architecture
-- **Remote Worldwide** - Global distributed teams
+**Open to global opportunities** in ML engineering, financial technology, and enterprise software development.
 
 **Contact:** tiago@confenge.com.br
 
