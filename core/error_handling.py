@@ -174,7 +174,7 @@ class ErrorHandler:
         console_handler = logging.StreamHandler()
         console_handler.setLevel(logging.WARNING)
         
-        # Formatter
+        # Secure formatter - no sensitive information
         formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
         )
@@ -188,6 +188,65 @@ class ErrorHandler:
             self.logger.addHandler(error_handler)
             self.logger.addHandler(info_handler)
             self.logger.addHandler(console_handler)
+    
+    def _sanitize_log_message(self, message: str) -> str:
+        \"\"\"Sanitize log messages to remove sensitive information\"\"\"
+        if not message:
+            return message
+        
+        import re
+        
+        # Remove common sensitive patterns
+        sensitive_patterns = [
+            (r'password[=:]\s*[\'"]?([^\s\'"]+)', r'password=***'),
+            (r'token[=:]\s*[\'"]?([^\s\'"]+)', r'token=***'),
+            (r'secret[=:]\s*[\'"]?([^\s\'"]+)', r'secret=***'),
+            (r'key[=:]\s*[\'"]?([^\s\'"]+)', r'key=***'),
+            (r'auth[=:]\s*[\'"]?([^\s\'"]+)', r'auth=***'),
+            (r'Bearer\s+([^\s]+)', r'Bearer ***'),
+            (r'\\b\\d{4}[-\\s]?\\d{4}[-\\s]?\\d{4}[-\\s]?\\d{4}\\b', r'****-****-****-****'),  # Credit card
+            (r'\\b\\d{3}-\\d{2}-\\d{4}\\b', r'***-**-****'),  # SSN
+            (r'\\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}\\b', r'***@***.***'),  # Email
+        ]
+        
+        sanitized = message
+        for pattern, replacement in sensitive_patterns:
+            sanitized = re.sub(pattern, replacement, sanitized, flags=re.IGNORECASE)
+        
+        return sanitized
+    
+    def _sanitize_context(self, context: dict) -> dict:
+        \"\"\"Sanitize context dictionary to remove sensitive information\"\"\"
+        if not context:
+            return context
+        
+        sanitized = {}
+        sensitive_keys = ['password', 'token', 'secret', 'key', 'auth', 'credential']
+        
+        for key, value in context.items():
+            key_lower = key.lower()
+            if any(sensitive_key in key_lower for sensitive_key in sensitive_keys):
+                sanitized[key] = '***'
+            elif isinstance(value, str):
+                sanitized[key] = self._sanitize_log_message(value)
+            else:
+                sanitized[key] = value
+        
+        return sanitized
+    
+    def _sanitize_stack_trace(self, stack_trace: str) -> str:
+        \"\"\"Sanitize stack trace to remove sensitive information\"\"\"
+        if not stack_trace:
+            return stack_trace
+        
+        # Remove file paths that might contain sensitive information
+        import re
+        sanitized = re.sub(r'File \"[^\"]*\\\\([^\\\\\"]+)\"', r'File \"...\\\\\\1\"', stack_trace)
+        
+        # Remove sensitive data patterns
+        sanitized = self._sanitize_log_message(sanitized)
+        
+        return sanitized
     
     def generate_error_id(self) -> str:
         """Generate unique error ID"""
@@ -262,10 +321,13 @@ class ErrorHandler:
             technical_details = str(error)
             suggested_action = self.suggested_actions.get(category, "Please contact support.")
             
-            # Get stack trace for non-user errors
+            # Get stack trace for critical errors only (security consideration)
             stack_trace = None
-            if severity in [ErrorSeverity.HIGH, ErrorSeverity.CRITICAL]:
+            if severity == ErrorSeverity.CRITICAL:
                 stack_trace = traceback.format_exc()
+            elif severity == ErrorSeverity.HIGH:
+                # For high severity, only include the error type and message
+                stack_trace = f"{type(error).__name__}: {str(error)}"
             
             # Create error info
             error_info = ErrorInfo(
@@ -318,21 +380,24 @@ class ErrorHandler:
             'context': error_info.context
         }
         
-        # Log with appropriate level
-        if error_info.severity == ErrorSeverity.CRITICAL:
-            self.logger.critical(f"CRITICAL ERROR {error_info.error_id}: {error_info.message}")
-        elif error_info.severity == ErrorSeverity.HIGH:
-            self.logger.error(f"HIGH ERROR {error_info.error_id}: {error_info.message}")
-        elif error_info.severity == ErrorSeverity.MEDIUM:
-            self.logger.warning(f"MEDIUM ERROR {error_info.error_id}: {error_info.message}")
-        else:
-            self.logger.info(f"LOW ERROR {error_info.error_id}: {error_info.message}")
+        # Log with appropriate level - sanitize sensitive information
+        safe_message = self._sanitize_log_message(error_info.message)
+        safe_context = self._sanitize_context(error_info.context)
         
-        # Save detailed error log
+        if error_info.severity == ErrorSeverity.CRITICAL:
+            self.logger.critical(f"CRITICAL ERROR {error_info.error_id}: {safe_message}")
+        elif error_info.severity == ErrorSeverity.HIGH:
+            self.logger.error(f"HIGH ERROR {error_info.error_id}: {safe_message}")
+        elif error_info.severity == ErrorSeverity.MEDIUM:
+            self.logger.warning(f"MEDIUM ERROR {error_info.error_id}: {safe_message}")
+        else:
+            self.logger.info(f"LOW ERROR {error_info.error_id}: {safe_message}")
+        
+        # Save detailed error log with sanitized data
         self.save_error_details(error_info)
     
     def save_error_details(self, error_info: ErrorInfo):
-        """Save detailed error information"""
+        """Save detailed error information with sanitization"""
         try:
             import os
             os.makedirs("logs", exist_ok=True)
@@ -341,24 +406,27 @@ class ErrorHandler:
                 'error_id': error_info.error_id,
                 'category': error_info.category.value,
                 'severity': error_info.severity.value,
-                'message': error_info.message,
+                'message': self._sanitize_log_message(error_info.message),
                 'user_message': error_info.user_message,
-                'technical_details': error_info.technical_details,
+                'technical_details': self._sanitize_log_message(error_info.technical_details),
                 'timestamp': error_info.timestamp.isoformat(),
-                'context': error_info.context,
-                'stack_trace': error_info.stack_trace,
+                'context': self._sanitize_context(error_info.context),
+                'stack_trace': self._sanitize_stack_trace(error_info.stack_trace),
                 'suggested_action': error_info.suggested_action
             }
             
-            # Append to errors log file
+            # Append to errors log file with secure permissions
             with open(self.error_log_file, 'a', encoding='utf-8') as f:
                 f.write(json.dumps(error_data) + '\n')
+            
+            # Set secure file permissions
+            os.chmod(self.error_log_file, 0o600)
                 
         except Exception as e:
             self.logger.critical(f"Failed to save error details: {str(e)}")
     
     def display_error_to_user(self, error_info: ErrorInfo):
-        """Display error to user in Streamlit"""
+        """Display error to user in Streamlit - no sensitive information"""
         if error_info.severity == ErrorSeverity.CRITICAL:
             st.error(f"🔴 {error_info.user_message}")
             st.error(f"Error ID: {error_info.error_id}")

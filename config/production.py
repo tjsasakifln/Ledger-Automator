@@ -52,8 +52,8 @@ class SecurityConfig:
 @dataclass
 class DatabaseConfig:
     """Database configuration settings"""
-    # Connection
-    DATABASE_URL: str = os.getenv('DATABASE_URL', 'postgresql://user:pass@localhost:5432/ledger_automator')
+    # Connection - validate and sanitize database URL
+    DATABASE_URL: str = os.getenv('DATABASE_URL', 'postgresql://ledger_user:CHANGE_ME@localhost:5432/ledger_automator')
     DATABASE_POOL_SIZE: int = int(os.getenv('DB_POOL_SIZE', '20'))
     DATABASE_MAX_OVERFLOW: int = int(os.getenv('DB_MAX_OVERFLOW', '30'))
     DATABASE_POOL_TIMEOUT: int = int(os.getenv('DB_POOL_TIMEOUT', '30'))
@@ -253,8 +253,12 @@ class ProductionConfig:
             errors.append("JWT_SECRET must be at least 32 characters long")
         
         # Validate database configuration
-        if not self.database.DATABASE_URL.startswith('postgresql://'):
+        if not self.database.DATABASE_URL.startswith('postgresql://') and not self.database.DATABASE_URL.startswith('postgresql+psycopg2://'):
             errors.append("DATABASE_URL must be a PostgreSQL connection string")
+        
+        # Check for insecure database credentials
+        if 'user:pass@' in self.database.DATABASE_URL or 'CHANGE_ME' in self.database.DATABASE_URL:
+            errors.append("DATABASE_URL contains default credentials - change before production use")
         
         # Validate logging directory
         log_dir = Path(self.logging.LOG_DIR)
@@ -276,12 +280,18 @@ class ProductionConfig:
     
     def get_database_config(self) -> Dict[str, Any]:
         """Get database configuration for SQLAlchemy"""
+        # Validate database URL before use
+        if not self._is_database_url_secure(self.database.DATABASE_URL):
+            raise ValueError("Insecure database URL - check credentials and SSL settings")
+        
         config = {
             'url': self.database.DATABASE_URL,
             'pool_size': self.database.DATABASE_POOL_SIZE,
             'max_overflow': self.database.DATABASE_MAX_OVERFLOW,
             'pool_timeout': self.database.DATABASE_POOL_TIMEOUT,
             'echo': self.database.DATABASE_ECHO,
+            'pool_pre_ping': True,  # Validate connections before use
+            'pool_recycle': 3600,   # Recycle connections every hour
         }
         
         # Add SSL configuration if specified
@@ -383,6 +393,28 @@ class ProductionConfig:
             return int(size_str[:-2]) * 1024 * 1024 * 1024
         else:
             return int(size_str)
+    
+    def _is_database_url_secure(self, url: str) -> bool:
+        """Validate database URL security"""
+        # Check for insecure patterns
+        insecure_patterns = [
+            'user:pass@',
+            'CHANGE_ME',
+            'password123',
+            'admin:admin',
+            'root:root',
+            'postgres:postgres'
+        ]
+        
+        for pattern in insecure_patterns:
+            if pattern in url:
+                return False
+        
+        # Check for SSL in production
+        if self.ENVIRONMENT == 'production' and 'sslmode=require' not in url:
+            return False
+        
+        return True
 
 # Global configuration instance
 config = ProductionConfig()

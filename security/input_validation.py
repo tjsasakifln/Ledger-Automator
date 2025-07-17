@@ -41,9 +41,9 @@ class InputValidator:
     def __init__(self, validation_level: ValidationLevel = ValidationLevel.MODERATE):
         self.validation_level = validation_level
         
-        # CSV Injection patterns
+        # CSV Injection patterns - comprehensive list
         self.csv_injection_patterns = [
-            r'^[@=+\-]',  # Formula injection
+            r'^[@=+\-\t\r\n]',  # Formula injection including tab/newline
             r'cmd\s*\|',  # Command injection
             r'powershell',
             r'javascript:',
@@ -55,9 +55,14 @@ class InputValidator:
             r'=IMPORTHTML',
             r'=EXEC\(',
             r'=SYSTEM\(',
+            r'=CMD\(',
+            r'=COMMAND\(',
+            r'=SHELL\(',
             r'file://',
-            r'http://',
-            r'https://'
+            r'\\\\',  # UNC paths
+            r'\$\{',  # Template injection
+            r'<%',     # Server-side template injection
+            r'\{\{',   # Mustache/Handlebars injection
         ]
         
         # XSS patterns
@@ -175,8 +180,11 @@ class InputValidator:
         # Unicode normalization
         sanitized = unicodedata.normalize('NFKC', sanitized)
         
-        # Remove control characters
-        sanitized = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', sanitized)
+        # Remove control characters but preserve some whitespace
+        sanitized = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]', '', sanitized)
+        
+        # Normalize line endings
+        sanitized = re.sub(r'\r\n|\r|\n', ' ', sanitized)
         
         # Length validation
         if len(sanitized) > 1000:
@@ -528,9 +536,12 @@ class InputValidator:
         """Sanitize known injection patterns"""
         sanitized = text
         
-        # Escape dangerous formula prefixes
-        if re.match(r'^[@=+\-]', sanitized):
-            sanitized = "'" + sanitized
+        # Escape dangerous formula prefixes more comprehensively
+        dangerous_prefixes = ['@', '=', '+', '-', '\t', '\r', '\n']
+        for prefix in dangerous_prefixes:
+            if sanitized.startswith(prefix):
+                sanitized = "'" + sanitized
+                break
         
         # Remove script tags
         sanitized = re.sub(r'<script[^>]*>.*?</script>', '', sanitized, flags=re.IGNORECASE | re.DOTALL)
@@ -538,9 +549,12 @@ class InputValidator:
         # Remove javascript: and data: schemes
         sanitized = re.sub(r'(javascript|data):', '', sanitized, flags=re.IGNORECASE)
         
-        # Remove SQL comment patterns
+        # Remove SQL comment patterns and other dangerous constructs
         sanitized = re.sub(r'--.*$', '', sanitized, flags=re.MULTILINE)
         sanitized = re.sub(r'/\*.*?\*/', '', sanitized, flags=re.DOTALL)
+        sanitized = re.sub(r';\s*$', '', sanitized)  # Remove trailing semicolons
+        sanitized = re.sub(r'\bunion\b.*\bselect\b', '', sanitized, flags=re.IGNORECASE)
+        sanitized = re.sub(r'\bdrop\b.*\btable\b', '', sanitized, flags=re.IGNORECASE)
         
         return sanitized
     

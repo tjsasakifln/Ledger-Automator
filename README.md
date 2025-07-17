@@ -1,6 +1,6 @@
 # Ledger Automator - Financial Transaction Classification System
 
-**A comprehensive machine learning prototype demonstrating automated financial transaction categorization. This solo-developed project showcases production-oriented architecture patterns, security implementations, and scalable design principles applicable to enterprise fintech solutions.**
+**Machine learning system for automated financial transaction categorization, demonstrating production-ready architecture patterns, security implementations, and scalable design principles for enterprise fintech solutions.**
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
 [![Streamlit](https://img.shields.io/badge/Streamlit-Dashboard-red.svg)](https://streamlit.io)
@@ -10,54 +10,54 @@
 
 ---
 
-## 👨‍💻 **About This Project**
+## Overview
 
-This is a **solo development project** created to demonstrate:
-- Modern ML engineering practices in financial applications
-- Enterprise-grade security patterns and implementations
+This project demonstrates:
+- ML engineering practices for financial applications
+- Enterprise security patterns and implementations
 - Scalable architecture design for fintech systems
 - Professional software development lifecycle
 
-**Available for international fintech opportunities** - Interested in roles involving ML engineering, financial technology, and enterprise software development globally.
+**Open to international opportunities** in ML engineering, financial technology, and enterprise software development.
 
-## 📋 **Project Status & Scope**
+## Project Status
 
-**Development Prototype** - This project demonstrates production-oriented patterns and implementations, but requires proper testing, validation, and deployment processes before any commercial use.
+**Development Prototype** - Demonstrates production-oriented patterns and implementations. Requires testing, validation, and deployment processes before commercial use.
 
-### 🔧 **Architecture Components Implemented**
+### Architecture Components
 - **Security Framework** - Authentication patterns, input validation, secure file handling
 - **Scalable Design** - Database abstraction, caching layer, API structure
-- **ML Pipeline** - Enhanced training, validation, and prediction workflows  
+- **ML Pipeline** - Enhanced training, validation, and prediction workflows
 - **Testing Foundation** - Test structure and security validation patterns
 - **Configuration Management** - Environment-based settings and deployment patterns
 - **Monitoring Patterns** - Logging, error handling, and observability structure
 
-### ⚠️ **Important Disclaimers**
-- **Solo Development**: All code developed individually for demonstration purposes
-- **Limited Testing**: Testing coverage limited to development environment scenarios
-- **No Production Validation**: Has not undergone enterprise security audits or load testing
-- **Prototype Status**: Demonstrates enterprise patterns but requires full validation for production use
+### Development Status
+- **Solo Development**: Individual development for demonstration purposes
+- **Limited Testing**: Development environment testing only
+- **Production Validation**: Requires enterprise security audits and load testing
+- **Prototype Status**: Demonstrates enterprise patterns, requires full validation for production
 
-## 🏗️ **Technical Architecture**
+## Technical Architecture
 
-This project demonstrates enterprise-oriented architecture patterns for financial ML systems:
+Enterprise-oriented architecture patterns for financial ML systems:
 
-### 🎯 **Core Components**
+### Core Components
 - **Transaction Classification Engine** - ML pipeline for automated categorization
 - **Security Layer** - Authentication, authorization, and input validation patterns
 - **API Structure** - REST endpoint design for transaction processing
 - **Data Management** - Database abstraction and caching layer design
 - **Configuration Framework** - Environment-based settings management
 
-### 🔧 **Technical Implementation**
+### Technical Implementation
 
-- **🔐 Security Patterns** - Multi-factor authentication design, role-based access control structure, secure file handling
-- **⚡ Performance Design** - Caching strategies, async processing patterns, optimized data flow
-- **🧠 ML Pipeline** - Enhanced training process, validation workflows, prediction engine
-- **📊 Observability** - Structured logging design, error handling patterns, monitoring foundations
-- **🚀 Deployment Patterns** - Configuration management, environment separation, containerization readiness
+- **Security Patterns** - Multi-factor authentication design, role-based access control structure, secure file handling
+- **Performance Design** - Caching strategies, async processing patterns, optimized data flow
+- **ML Pipeline** - Enhanced training process, validation workflows, prediction engine
+- **Observability** - Structured logging design, error handling patterns, monitoring foundations
+- **Deployment Patterns** - Configuration management, environment separation, containerization readiness
 
-## 📁 **Enterprise Project Structure**
+## Project Structure
 
 ```
 ledger-automator/
@@ -84,24 +84,24 @@ ledger-automator/
 └── .env.example                   # 🔑 Environment configuration template
 ```
 
-## ⚡ **Production Deployment Guide**
+## Deployment Guide
 
-### 🚀 **Development Setup**
+### Development Setup
 
 ```bash
-# Clone the enterprise platform
+# Clone the repository
 git clone https://github.com/tjsasakifln/Ledger-Automator.git
-cd ledger-automator
+cd Ledger-Automator
 
-# Install production dependencies
-pip install -r requirements-production.txt
+# Install dependencies
+pip install -r requirements.txt
 
 # Configure environment
 cp .env.example .env
 # Edit .env with your production settings
 ```
 
-### 🔧 **Enterprise Configuration**
+### Configuration
 
 ```bash
 # Set up production database (PostgreSQL)
@@ -115,7 +115,7 @@ export LEDGER_SECRET_KEY="your-production-secret-key-32-chars-minimum"
 export LEDGER_JWT_SECRET="your-jwt-secret-key-32-chars-minimum"
 ```
 
-### 🧪 **Run Production Tests**
+### Testing
 
 ```bash
 # Execute comprehensive test suite
@@ -128,26 +128,26 @@ pytest tests/test_security.py -v -m security
 pytest tests/ -v -m performance
 ```
 
-### 🌐 **Production Deployment**
+### Production Deployment
 
 ```bash
-# Train enterprise ML model
-python scripts/ml_pipeline.py
+# Train ML model
+python scripts/train_model.py
 
-# Launch production API server
-uvicorn api.main:app --host 0.0.0.0 --port 8000 --workers 4
+# Launch API server
+uvicorn api.main:app --host 0.0.0.0 --port 8000
 
-# Start web interface (optional)
-streamlit run scripts/app_mvc.py --server.port 8501
+# Start web interface
+streamlit run scripts/app.py --server.port 8501
 ```
 
 **Access Points:**
-- 🔗 **REST API**: `http://localhost:8000/api/v1/`
-- 🌐 **Web Interface**: `http://localhost:8501`
-- 📊 **API Docs**: `http://localhost:8000/docs`
-- 📈 **Metrics**: `http://localhost:9090/metrics`
+- **REST API**: Port 8000 (`/api/v1/`)
+- **Web Interface**: Port 8501
+- **API Documentation**: Port 8000 (`/docs`)
+- **Metrics Endpoint**: Port 9090 (`/metrics`)
 
-## 📊 Sample Data Format
+## Sample Data Format
 
 ### Training Data (`training_data.csv`)
 ```csv
@@ -166,7 +166,7 @@ Date,Description,Amount
 2024-01-18,Gas Station Shell,-80.00
 ```
 
-## 🎯 Supported Categories
+## Supported Categories
 
 The prototype recognizes 8 basic transaction categories:
 
@@ -181,7 +181,7 @@ The prototype recognizes 8 basic transaction categories:
 | **Housing** | Rent, mortgage payments |
 | **Shopping** | Retail stores, online purchases |
 
-## 🔬 Technical Implementation
+## Technical Implementation
 
 ### Machine Learning Pipeline
 1. **Text Preprocessing** - Basic cleaning and normalization
@@ -199,55 +199,55 @@ The prototype recognizes 8 basic transaction categories:
 - **ReportLab** - PDF generation
 - **joblib** - Model serialization
 
-## 🛠️ **Development Implementations**
+## Development Implementations
 
-### 🔒 **Security Components (Prototype)**
+### Security Components (Prototype)
 - **Authentication Framework** - PBKDF2 password hashing, JWT token structure, session management patterns
 - **Access Control Design** - Role-based permissions (Admin, User, Viewer) with authorization patterns
 - **File Security** - Upload validation, type checking, content sanitization
 - **Input Validation** - Protection patterns against injection attacks and malicious content
 - **Audit Framework** - Security event logging and tracking structure
 
-### 🏗️ **Architecture Patterns (Development)**
+### Architecture Patterns (Development)
 - **Database Layer** - PostgreSQL integration patterns with connection pooling design
 - **Caching Strategy** - Redis implementation for session and response caching
 - **API Design** - FastAPI structure with async processing patterns
 - **Concurrent Processing** - Thread-safe operation patterns for multi-user scenarios
 - **Containerization** - Docker configuration templates for deployment
 
-### 🤖 **ML Pipeline (Enhanced)**
+### ML Pipeline (Enhanced)
 - **Training Enhancement** - Cross-validation, hyperparameter tuning workflows
 - **Model Management** - Performance tracking, validation, and storage patterns
 - **Algorithm Comparison** - Multiple model evaluation and selection
 - **Data Quality** - Validation and cleaning pipeline implementations
 - **Monitoring Design** - Model performance tracking and alerting structure
 
-### 📊 **Operations Patterns (Framework)**
+### Operations Patterns (Framework)
 - **Testing Structure** - Security testing, unit testing, and integration test patterns
 - **Logging Framework** - Structured logging with correlation IDs and event tracking
 - **Error Handling** - Exception management and graceful degradation patterns
 - **Configuration** - Environment-based settings and deployment configuration
 - **Monitoring Design** - Health check, metrics collection, and alerting patterns
 
-### ⚠️ **Development Status Notes**
+### Development Status Notes
 - **Pattern Implementation**: All components implemented as development prototypes
 - **Testing Scope**: Limited to development environment validation
 - **Production Readiness**: Requires comprehensive testing, security audits, and performance validation
 - **Deployment**: Configuration templates provided but not production-validated
 
-## 🗺️ **Development Roadmap & Production Path**
+## Development Roadmap & Production Path
 
-### 📋 **Current Status: Phase 1 Prototype Development**
+### Current Status: Phase 1 Prototype Development
 **Status:** 🔄 **Development Prototype** - Enterprise patterns implemented, production validation pending
 
-#### 🛠️ **Prototype Components Developed**
+#### Prototype Components Developed
 - **Enhanced ML Pipeline** - Cross-validation, hyperparameter tuning, monitoring patterns
 - **Security Framework** - Authentication, validation, and audit logging structure  
 - **Architecture Patterns** - Database integration, caching, API design
 - **Testing Foundation** - Test structure with security validation patterns
 - **Configuration Management** - Environment-based deployment patterns
 
-#### ⚠️ **Remaining Work for Production Readiness**
+#### Remaining Work for Production Readiness
 - **Security Auditing** - Professional security assessment and penetration testing
 - **Performance Testing** - Load testing, stress testing, scalability validation
 - **Production Deployment** - Infrastructure setup, monitoring, backup systems
@@ -319,9 +319,9 @@ The prototype recognizes 8 basic transaction categories:
 
 *Estimates include salaries, infrastructure, compliance, and operational costs*
 
-## 💼 **Professional Development Showcase**
+## Professional Development Showcase
 
-**This project demonstrates enterprise-grade development capabilities** through a comprehensive fintech prototype. It showcases:
+**This project demonstrates enterprise development capabilities** through a comprehensive fintech prototype. It showcases:
 
 - 🏗️ **Architecture Design** - Enterprise patterns for financial applications
 - 🔒 **Security Implementation** - Authentication, validation, and audit frameworks
@@ -329,48 +329,47 @@ The prototype recognizes 8 basic transaction categories:
 - 📊 **Full-Stack Development** - From database design to user interface
 - 🛠️ **DevOps Patterns** - Configuration management, testing, and deployment
 
-**Suitable for organizations evaluating:**
-- Enterprise fintech platform development capabilities
+**Suitable for evaluating:**
+- Fintech platform development capabilities
 - ML engineering expertise in financial applications
 - Full-stack development skills for production systems
 - Security-conscious development practices
 
-### 🎯 **What This Project Demonstrates**
-- ✅ **Professional Architecture** - Enterprise patterns and best practices
-- ✅ **Security Awareness** - Comprehensive security framework implementation
-- ✅ **ML Engineering** - Advanced pipeline development and validation
-- ✅ **Development Lifecycle** - Testing, configuration, and deployment patterns
-- ✅ **Technical Documentation** - Professional documentation and communication
+### What This Project Demonstrates
+- **Professional Architecture** - Enterprise patterns and best practices
+- **Security Awareness** - Comprehensive security framework implementation
+- **ML Engineering** - Advanced pipeline development and validation
+- **Development Lifecycle** - Testing, configuration, and deployment patterns
+- **Technical Documentation** - Professional documentation and communication
 
-### 🌍 **Open to International Opportunities**
+## Professional Background
 
-**ML Engineer & Full-Stack Developer** with demonstrated fintech development capabilities.
+**ML Engineer & Full-Stack Developer** with demonstrated expertise in enterprise fintech development.
 
-**Interested in international roles:**
-- 🇺🇸 **United States** - ML engineering and fintech development positions
-- 🇨🇦 **Canada** - Financial technology and AI engineering roles
-- 🇬🇧 **United Kingdom** - Senior engineering positions in fintech sector
-- 🇦🇺 **Australia** - Enterprise software development opportunities
-- 🇩🇪 **Germany** - FinTech innovation and engineering projects
-- 🇸🇬 **Singapore** - Financial technology architecture roles
-- 🌐 **Remote Worldwide** - Global distributed team positions
+**Seeking international opportunities in:**
+- **United States** - ML engineering and fintech development
+- **Canada** - Financial technology and AI engineering
+- **United Kingdom** - Senior engineering positions in fintech
+- **Australia** - Enterprise software development
+- **Germany** - FinTech innovation and engineering
+- **Singapore** - Financial technology architecture
+- **Remote Worldwide** - Global distributed teams
 
-📧 **Professional Inquiries:** tiago@confenge.com.br  
-💼 **Portfolio:** Enterprise development patterns demonstrated in this project
+**Contact:** tiago@confenge.com.br
 
 ---
 
-## 🧪 Educational Use Cases
+## Educational Applications
 
-This prototype is excellent for:
+This prototype serves as:
 
-- **🎓 Learning ML fundamentals** - Understand classification pipelines
-- **👨‍💻 Code portfolio projects** - Demonstrate full-stack ML skills
-- **🔬 Research experiments** - Test new NLP approaches on financial data
-- **📚 Teaching material** - Show students real-world ML applications
-- **🏗️ Hackathon foundation** - Starting point for fintech innovations
+- **Learning resource** for ML classification pipelines
+- **Portfolio demonstration** of full-stack ML skills
+- **Research foundation** for NLP approaches in financial data
+- **Teaching material** for real-world ML applications
+- **Development foundation** for fintech innovations
 
-## 🛠️ Contributing
+## Contributing
 
 We welcome contributions that improve the educational value:
 
@@ -395,13 +394,13 @@ python scripts/classify.py
 streamlit run scripts/app.py
 ```
 
-## 📄 License
+## License
 
 MIT License - see [LICENSE](https://github.com/tjsasakifln/Ledger-Automator/blob/master/LICENSE) file for details.
 
-## 🌟 Contact & Business Development
+## Contact & Business Development
 
-### 💼 **Interested in Production Development?**
+### Interested in Production Development?
 
 This proof of concept demonstrates the foundational technology for enterprise-grade financial AI platforms. If you're interested in developing this into a production-ready solution for your organization, let's discuss how we can make it happen.
 
@@ -410,11 +409,11 @@ This proof of concept demonstrates the foundational technology for enterprise-gr
 - 💼 **Consultancy**: Available for custom fintech AI development
 - 🚀 **Partnership**: Open to collaborative development opportunities
 
-### 🛠️ **Technical Support**
+### Technical Support
 - 🐛 **Issues**: [GitHub Issues](https://github.com/tjsasakifln/Ledger-Automator/issues)
 - 💬 **Discussions**: [GitHub Discussions](https://github.com/tjsasakifln/Ledger-Automator/discussions)
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 This project was created as a learning exercise and technology demonstration. While not suitable for production use, it serves as a solid foundation for understanding ML applications in financial technology.
 
@@ -422,29 +421,27 @@ This project was created as a learning exercise and technology demonstration. Wh
 
 ---
 
-## 🚀 **Development Prototype with Enterprise Patterns**
+## Development Prototype with Enterprise Patterns
 
 This fintech development prototype demonstrates **enterprise-oriented architecture and implementation patterns**. While developed as a learning and demonstration project, it showcases production-grade development approaches.
 
 **Technical Achievements:**
-- ✅ **Security Framework** - Authentication, validation, and audit patterns
-- ✅ **Architecture Design** - Scalable database, caching, and API patterns
-- ✅ **ML Pipeline** - Enhanced training, validation, and monitoring workflows
-- ✅ **Testing Structure** - Security testing and validation patterns
-- ✅ **Configuration Management** - Environment-based deployment patterns
+- **Security Framework** - Authentication, validation, and audit patterns
+- **Architecture Design** - Scalable database, caching, and API patterns
+- **ML Pipeline** - Enhanced training, validation, and monitoring workflows
+- **Testing Structure** - Security testing and validation patterns
+- **Configuration Management** - Environment-based deployment patterns
 
-### 💼 **Professional Capabilities Demonstrated**
+### Professional Capabilities
 
-**ML Engineer & Full-Stack Developer** capabilities shown:
-- 🏗️ **System Architecture** - Enterprise pattern design and implementation
-- 🔧 **Full-Stack Development** - From database design to user interface
-- 🛡️ **Security Implementation** - Comprehensive security framework development
-- 📊 **ML Engineering** - Advanced pipeline development and optimization
-- 🚀 **DevOps Practices** - Configuration, testing, and deployment patterns
+**Technical expertise demonstrated:**
+- **System Architecture** - Enterprise pattern design and implementation
+- **Full-Stack Development** - From database design to user interface
+- **Security Implementation** - Comprehensive security framework development
+- **ML Engineering** - Advanced pipeline development and optimization
+- **DevOps Practices** - Configuration, testing, and deployment patterns
 
-📧 **Professional Development Inquiries**: tiago@confenge.com.br  
-💼 **Technical Portfolio**: Enterprise patterns and implementations demonstrated  
-🌐 **International Opportunities**: Open to global fintech and ML engineering roles
+**Professional inquiries:** tiago@confenge.com.br
 
 ---
 

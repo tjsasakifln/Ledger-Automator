@@ -17,6 +17,10 @@ import json
 import os
 from pathlib import Path
 
+class SecurityError(Exception):
+    """Custom security exception"""
+    pass
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -62,14 +66,19 @@ class SecurityManager:
     def _get_or_create_secret_key(self) -> str:
         """Get or create secret key for session signing"""
         key_file = Path("security/secret.key")
+        
+        # Validate path to prevent directory traversal
+        if not str(key_file.resolve()).startswith(str(Path.cwd().resolve())):
+            raise SecurityError("Invalid key file path")
+        
         key_file.parent.mkdir(exist_ok=True)
         
         if key_file.exists():
             with open(key_file, 'r') as f:
                 return f.read().strip()
         else:
-            # Generate new secret key
-            key = secrets.token_hex(32)
+            # Generate new secret key (512-bit for better security)
+            key = secrets.token_hex(64)
             with open(key_file, 'w') as f:
                 f.write(key)
             # Set secure permissions
@@ -128,8 +137,9 @@ class SecurityManager:
         os.chmod(self.users_file, 0o600)
     
     def _create_default_admin(self):
-        """Create default admin user"""
-        default_password = "SecureAdmin123!"
+        """Create default admin user with secure random password"""
+        # Generate secure random password
+        default_password = secrets.token_urlsafe(16)
         salt = secrets.token_hex(32)
         password_hash = self._hash_password(default_password, salt)
         
@@ -145,7 +155,16 @@ class SecurityManager:
         self.users["admin"] = admin_user
         self._save_users()
         
-        logger.warning(f"Default admin created with password: {default_password}")
+        # Save password to secure file instead of logging
+        admin_pwd_file = Path("security/admin_password.txt")
+        admin_pwd_file.parent.mkdir(exist_ok=True)
+        with open(admin_pwd_file, 'w') as f:
+            f.write(f"Default admin password: {default_password}\n")
+            f.write("CHANGE THIS PASSWORD IMMEDIATELY!\n")
+            f.write("Delete this file after setting new password.\n")
+        os.chmod(admin_pwd_file, 0o600)
+        
+        logger.warning("Default admin created. Password saved to security/admin_password.txt")
         logger.warning("CHANGE THIS PASSWORD IMMEDIATELY!")
     
     def _hash_password(self, password: str, salt: str) -> str:
@@ -153,8 +172,8 @@ class SecurityManager:
         return hashlib.pbkdf2_hex(
             password.encode('utf-8'),
             salt.encode('utf-8'),
-            100000,  # iterations
-            32  # key length
+            600000,  # increased iterations for better security
+            64  # increased key length
         )
     
     def _verify_password(self, password: str, salt: str, hash_expected: str) -> bool:
@@ -228,17 +247,26 @@ class SecurityManager:
         if username not in self.users:
             raise ValueError("User not found")
         
-        session_id = secrets.token_urlsafe(32)
+        session_id = secrets.token_urlsafe(48)  # increased token length
         session_data = {
             'username': username,
             'role': self.users[username].role.value,
             'created_at': time.time(),
-            'expires_at': time.time() + self.SESSION_TIMEOUT
+            'expires_at': time.time() + self.SESSION_TIMEOUT,
+            'csrf_token': secrets.token_hex(32)  # Add CSRF token
         }
+        
+        # Create session signature to prevent tampering
+        session_signature = hmac.new(
+            self.secret_key.encode(),
+            json.dumps(session_data, sort_keys=True).encode(),
+            hashlib.sha256
+        ).hexdigest()
         
         # Store session in Streamlit session state
         st.session_state['session_id'] = session_id
         st.session_state['session_data'] = session_data
+        st.session_state['session_signature'] = session_signature
         st.session_state['authenticated'] = True
         
         logger.info(f"Session created for user: {username}")
@@ -246,11 +274,23 @@ class SecurityManager:
     
     def validate_session(self) -> Tuple[bool, Optional[str]]:
         """Validate current session"""
-        if 'session_data' not in st.session_state:
+        if 'session_data' not in st.session_state or 'session_signature' not in st.session_state:
             return False, "No session found"
         
         session_data = st.session_state['session_data']
+        session_signature = st.session_state['session_signature']
         current_time = time.time()
+        
+        # Validate session signature to prevent tampering
+        expected_signature = hmac.new(
+            self.secret_key.encode(),
+            json.dumps(session_data, sort_keys=True).encode(),
+            hashlib.sha256
+        ).hexdigest()
+        
+        if not hmac.compare_digest(session_signature, expected_signature):
+            self.logout()
+            return False, "Session tampered"
         
         # Check session expiration
         if current_time > session_data['expires_at']:
@@ -266,6 +306,14 @@ class SecurityManager:
         # Extend session on activity
         session_data['expires_at'] = current_time + self.SESSION_TIMEOUT
         st.session_state['session_data'] = session_data
+        
+        # Update signature after extending session
+        new_signature = hmac.new(
+            self.secret_key.encode(),
+            json.dumps(session_data, sort_keys=True).encode(),
+            hashlib.sha256
+        ).hexdigest()
+        st.session_state['session_signature'] = new_signature
         
         return True, username
     

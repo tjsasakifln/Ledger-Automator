@@ -20,6 +20,10 @@ from datetime import datetime, timedelta
 import io
 import csv
 
+class SecurityError(Exception):
+    """Custom security exception for file handling"""
+    pass
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -44,9 +48,15 @@ class SecureFileUpload:
         self.ALLOWED_EXTENSIONS = {'.csv'}
         self.ALLOWED_MIME_TYPES = {'text/csv', 'application/csv', 'text/plain'}
         
-        # Quarantine directory
+        # Quarantine directory with secure path validation
         self.quarantine_dir = Path("security/quarantine")
+        # Validate path to prevent directory traversal
+        if not str(self.quarantine_dir.resolve()).startswith(str(Path.cwd().resolve())):
+            raise SecurityError("Invalid quarantine directory path")
         self.quarantine_dir.mkdir(parents=True, exist_ok=True)
+        # Set secure permissions
+        import stat
+        os.chmod(self.quarantine_dir, stat.S_IRWXU)  # 700 permissions
         
         # Virus scanning patterns (basic)
         self.malicious_patterns = [
@@ -62,16 +72,27 @@ class SecureFileUpload:
             rb'<\?xml'
         ]
         
-        # CSV injection patterns
+        # CSV injection patterns - comprehensive list
         self.csv_injection_patterns = [
-            r'^[@=+\-]',  # Formulas starting with dangerous chars
+            r'^[@=+\-\t\r\n]',  # Formulas starting with dangerous chars including whitespace
             r'cmd\s*\|',   # Command execution
             r'powershell',
             r'javascript:',
             r'data:',
             r'<script',
             r'=HYPERLINK',
-            r'=WEBSERVICE'
+            r'=WEBSERVICE',
+            r'=IMPORTXML',
+            r'=IMPORTHTML',
+            r'=EXEC\(',
+            r'=SYSTEM\(',
+            r'=CMD\(',
+            r'=COMMAND\(',
+            r'=SHELL\(',
+            r'\\\\',  # UNC paths
+            r'\$\{',    # Template injection
+            r'<%',      # Server-side template injection
+            r'\{\{',    # Mustache/Handlebars injection
         ]
     
     def validate_file_upload(self, uploaded_file) -> FileValidationResult:
@@ -358,14 +379,22 @@ class SecureFileUpload:
         if pd.isna(text) or not isinstance(text, str):
             return text
         
-        # Remove dangerous formula prefixes
-        dangerous_prefixes = ['=', '+', '-', '@', '\t', '\r']
+        # Remove dangerous formula prefixes more comprehensively
+        dangerous_prefixes = ['=', '+', '-', '@', '\t', '\r', '\n']
+        dangerous_functions = ['CMD', 'EXEC', 'SYSTEM', 'HYPERLINK', 'WEBSERVICE']
         
         text = str(text).strip()
         
+        # Check for dangerous prefixes
         if text and text[0] in dangerous_prefixes:
-            # Escape dangerous formulas
             text = "'" + text
+        
+        # Check for dangerous functions
+        text_upper = text.upper()
+        for func in dangerous_functions:
+            if func in text_upper:
+                text = text.replace(func, f"'{func}")
+                text = text.replace(func.lower(), f"'{func.lower()}")
         
         # Remove control characters
         text = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', text)
@@ -377,14 +406,25 @@ class SecureFileUpload:
         return text
     
     def _quarantine_file(self, content: bytes, filename: str, reason: str):
-        """Quarantine suspicious file"""
+        """Quarantine suspicious file with secure handling"""
         try:
+            import stat
+            
+            # Sanitize filename to prevent path traversal
+            safe_filename = re.sub(r'[^a-zA-Z0-9._-]', '_', filename)
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            quarantine_filename = f"{timestamp}_{reason}_{filename}"
+            quarantine_filename = f"{timestamp}_{reason}_{safe_filename}"
             quarantine_path = self.quarantine_dir / quarantine_filename
+            
+            # Validate final path
+            if not str(quarantine_path.resolve()).startswith(str(self.quarantine_dir.resolve())):
+                raise SecurityError("Invalid quarantine file path")
             
             with open(quarantine_path, 'wb') as f:
                 f.write(content)
+            
+            # Set secure file permissions
+            os.chmod(quarantine_path, stat.S_IRUSR | stat.S_IWUSR)  # 600 permissions
             
             # Create metadata file
             metadata = {
@@ -399,6 +439,9 @@ class SecureFileUpload:
             with open(metadata_path, 'w') as f:
                 import json
                 json.dump(metadata, f, indent=2)
+            
+            # Set secure permissions on metadata file
+            os.chmod(metadata_path, stat.S_IRUSR | stat.S_IWUSR)  # 600 permissions
             
             logger.warning(f"File quarantined: {quarantine_filename} (reason: {reason})")
             
